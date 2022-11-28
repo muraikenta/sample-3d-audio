@@ -6,16 +6,16 @@ const SimpleRotationControls = (() => {
       window.addEventListener("keydown", (event) => {
         switch (event.key) {
           case "ArrowUp":
-            camera.position.z += 0.3;
+            camera.position.z += 1;
             break;
           case "ArrowDown":
-            camera.position.z -= 0.3;
+            camera.position.z -= 1;
             break;
           case "ArrowLeft":
-            camera.position.x += 0.3;
+            camera.position.x += 1;
             break;
           case "ArrowRight":
-            camera.position.x -= 0.3;
+            camera.position.x -= 1;
             break;
           default:
             return;

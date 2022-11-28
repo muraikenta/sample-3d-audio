@@ -98,8 +98,12 @@ const createPerson = (color, name, defaultPosition) => {
 
   return group;
 };
-const speakerMesh = createPerson(0x0000ff, "Speaker", { x: 0, y: 1, z: -3 });
-scene.add(speakerMesh);
+const speaker1 = createPerson(0x0000ff, "Speaker1", { x: 0, y: 1, z: -3 });
+const speaker2 = createPerson(0xff0000, "Speaker2", { x: -30, y: 1, z: 30 });
+const speaker3 = createPerson(0x00ff00, "Speaker3", { x: 30, y: 1, z: 30 });
+scene.add(speaker1);
+scene.add(speaker2);
+scene.add(speaker3);
 
 /* inspectors */
 const pannerNodeInspector = new PannerNodeInspector({
@@ -110,15 +114,16 @@ const pannerNodeInspector = new PannerNodeInspector({
   },
 });
 
-const transformInspector = new TransfromInspector({
-  parent: document.body,
-  title: "Speaker's position & rotation",
-});
-transformInspector.setObject(speakerMesh);
-
-const $audio = document.querySelector("audio");
-let audioContext;
-let pannerNode;
+const audios = document.querySelectorAll("audio");
+const $audio1 = audios[0];
+const $audio2 = audios[1];
+const $audio3 = audios[2];
+let audioContext1;
+let audioContext2;
+let audioContext3;
+let pannerNode1;
+let pannerNode2;
+let pannerNode3;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 
 /* set event handlers */
@@ -142,23 +147,44 @@ document.querySelector("#play").addEventListener("click", async () => {
     document.querySelector("#explanation-rotate").style.display = "block";
   }
 
-  if (!audioContext) {
-    audioContext = new AudioContext();
+  if (!audioContext1) {
+    audioContext1 = new AudioContext();
+  }
+  if (!audioContext2) {
+    audioContext2 = new AudioContext();
+  }
+  if (!audioContext3) {
+    audioContext3 = new AudioContext();
   }
 
-  $audio.play();
+  $audio1.play();
+  $audio2.play();
+  $audio3.play();
 
-  const source = audioContext.createMediaElementSource($audio);
-  pannerNode = audioContext.createPanner();
+  const source = audioContext1.createMediaElementSource($audio1);
+  pannerNode1 = audioContext1.createPanner();
+  pannerNode1.refDistance = 0.5;
+  source.connect(pannerNode1);
+  pannerNode1.connect(audioContext1.destination);
+  pannerNodeInspector.setPannerNode(pannerNode1);
 
-  source.connect(pannerNode);
-  pannerNode.connect(audioContext.destination);
+  const source2 = audioContext2.createMediaElementSource($audio2);
+  pannerNode2 = audioContext2.createPanner();
+  pannerNode2.refDistance = 0.5;
+  source2.connect(pannerNode2);
+  pannerNode2.connect(audioContext2.destination);
+  pannerNodeInspector.setPannerNode(pannerNode2);
 
-  pannerNodeInspector.setPannerNode(pannerNode);
+  const source3 = audioContext3.createMediaElementSource($audio3);
+  pannerNode3 = audioContext3.createPanner();
+  pannerNode3.refDistance = 0.5;
+  source3.connect(pannerNode3);
+  pannerNode3.connect(audioContext3.destination);
+  pannerNodeInspector.setPannerNode(pannerNode3);
 });
 
-const setAudioListenerProperties = (obj) => {
-  if (audioContext && pannerNode) {
+const setAudioListenerProperties = (obj, audioContext) => {
+  if (audioContext) {
     obj.updateMatrixWorld();
     const forward = new THREE.Vector3(0, 0, -1);
     const up = new THREE.Vector3(0, 1, 0);
@@ -196,7 +222,7 @@ const setAudioListenerProperties = (obj) => {
   }
 };
 
-const setAudioSourceProperties = (obj) => {
+const setAudioSourceProperties = (obj, audioContext, pannerNode) => {
   if (audioContext && pannerNode) {
     obj.updateMatrixWorld();
     const forward = new THREE.Vector3(0, 0, -1);
@@ -243,10 +269,12 @@ const updateFrame = () => {
   }
   renderer.render(scene, camera);
 
-  setAudioListenerProperties(camera);
-  setAudioSourceProperties(speakerMesh);
-
-  transformInspector.update(delta);
+  setAudioListenerProperties(camera, audioContext1);
+  setAudioListenerProperties(camera, audioContext2);
+  setAudioListenerProperties(camera, audioContext3);
+  setAudioSourceProperties(speaker1, audioContext1, pannerNode1);
+  setAudioSourceProperties(speaker2, audioContext2, pannerNode2);
+  setAudioSourceProperties(speaker3, audioContext3, pannerNode3);
 
   requestAnimationFrame(updateFrame);
 };
